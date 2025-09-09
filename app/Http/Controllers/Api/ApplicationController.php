@@ -54,8 +54,17 @@ class ApplicationController extends Controller
     public function store(ApplicationRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $data['user_id'] = auth()->id();
 
-        $data['user_id'] = auth()->id(); 
+        // Upload CV
+        if ($request->hasFile('cv_path')) {
+            $data['cv_path'] = $request->file('cv_path')->store('cvs', 'public');
+        }
+
+        // Upload lettre de motivation
+        if ($request->hasFile('cover_letter_path')) {
+            $data['cover_letter_path'] = $request->file('cover_letter_path')->store('cover_letters', 'public');
+        }
 
         $application = Application::create($data);
 
