@@ -19,7 +19,16 @@
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
+            ], [
+                'name.required' => 'Le nom est obligatoire.',
+                'email.required' => 'L\'email est obligatoire.',
+                'email.email' => 'L\'email doit être une adresse valide.',
+                'email.unique' => 'Cet email est déjà utilisé.',
+                'password.required' => 'Le mot de passe est obligatoire.',
+                'password.min' => 'Le mot de passe doit contenir au moins :min caractères.',
+                'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             ]);
+
 
             if ($validator->fails()) {
                 return response()->json([
