@@ -9,7 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('interviews:send-reminders')
-    ->dailyAt('09:00') // Heure fixe
+    ->dailyAt('09:00')
+    ->timezone('Europe/Paris')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/interview-reminders.log'))
-    ->description('📧 Rappels d\'entretien (TEST)');
+    ->description('Rappels d\'entretien (TEST)');
