@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ApplicationController;
+use App\Http\Controllers\Api\ApplicationStatsController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -24,4 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('upload-cover-letter', [ApplicationController::class, 'uploadCoverLetter']);
         Route::patch('status', [ApplicationController::class, 'updateStatus']);
     });
+
+    Route::get('stats/applications', [ApplicationStatsController::class, 'index']);
 });
