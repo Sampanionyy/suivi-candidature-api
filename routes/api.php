@@ -26,5 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('status', [ApplicationController::class, 'updateStatus']);
     });
 
-    Route::get('stats/applications', [ApplicationStatsController::class, 'index']);
+    Route::get('applications-stats', [ApplicationStatsController::class, 'index']);
+    Route::get('applications-interviews', [ApplicationController::class, 'interviews']);
 });

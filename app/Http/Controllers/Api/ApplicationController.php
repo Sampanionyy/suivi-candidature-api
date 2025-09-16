@@ -143,96 +143,25 @@ class ApplicationController extends Controller
         ]);
     }
 
-    /**
-     * Upload CV pour une candidature
-     */
-    public function uploadCV(Request $request, Application $application): JsonResponse
+    public function interviews()
     {
-        if ($application->user_id !== auth()->id()) {
+        try {
+            $interviews = Application::whereNotNull('interview_date')
+                ->orderBy('interview_date', 'asc')
+                ->get(['id', 'position', 'company', 'interview_date', 'status']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $interviews,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la récupération des entretiens : ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Non autorisé'
-            ], 403);
+                'message' => 'Une erreur est survenue lors de la récupération des entretiens.',
+            ], 500);
         }
-
-        $request->validate([
-            'cv' => 'required|file|mimes:pdf,doc,docx|max:5120' // Max 5MB
-        ]);
-
-        if ($application->cv_path) {
-            Storage::disk('public')->delete($application->cv_path);
-        }
-
-        $path = $request->file('cv')->store('cvs', 'public');
-        
-        $application->update(['cv_path' => $path]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'CV uploadé avec succès',
-            'data' => [
-                'cv_path' => $path,
-                'cv_url' => asset('storage/' . $path)
-            ]
-        ]);
     }
 
-    /**
-     * Upload lettre de motivation pour une candidature
-     */
-    public function uploadCoverLetter(Request $request, Application $application): JsonResponse
-    {
-        if ($application->user_id !== auth()->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Non autorisé'
-            ], 403);
-        }
-
-        $request->validate([
-            'cover_letter' => 'required|file|mimes:pdf,doc,docx|max:5120' // Max 5MB
-        ]);
-
-        if ($application->cover_letter_path) {
-            Storage::disk('public')->delete($application->cover_letter_path);
-        }
-
-        $path = $request->file('cover_letter')->store('cover-letters', 'public');
-        
-        $application->update(['cover_letter_path' => $path]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lettre de motivation uploadée avec succès',
-            'data' => [
-                'cover_letter_path' => $path,
-                'cover_letter_url' => asset('storage/' . $path)
-            ]
-        ]);
-    }
-
-    /**
-     * Mettre à jour le statut d'une candidature (pour le drag & drop)
-     */
-    public function updateStatus(Request $request, Application $application): JsonResponse
-    {
-        if ($application->user_id !== auth()->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Non autorisé'
-            ], 403);
-        }
-
-        $request->validate([
-            'status' => 'required|in:' . implode(',', array_keys(Application::STATUSES))
-        ]);
-
-        $application->update(['status' => $request->status]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Statut mis à jour avec succès',
-            'data' => new ApplicationResource($application)
-        ]);
-    }
 }
