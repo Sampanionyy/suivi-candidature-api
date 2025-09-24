@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\ApplicationStatsController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\DocumentController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -28,4 +30,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('applications-stats', [ApplicationStatsController::class, 'index']);
     Route::get('applications-interviews', [ApplicationController::class, 'interviews']);
+
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto']);
+    Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto']);
+
+    Route::get('/documents', [DocumentController::class, 'index']);
+    Route::post('/documents', [DocumentController::class, 'store']);
+    Route::delete('/documents/{id}', [DocumentController::class, 'destroy']);
 });

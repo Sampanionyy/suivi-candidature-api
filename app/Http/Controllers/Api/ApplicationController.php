@@ -56,15 +56,19 @@ class ApplicationController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
-        // Upload CV
+        
+       // Upload CV
         if ($request->hasFile('cv_path')) {
-            $data['cv_path'] = $request->file('cv_path')->store('cvs', 'public');
+            $path = $request->file('cv_path')->store('cvs', 'public');
+            $data['cv_path'] = Storage::url($path);
         }
 
         // Upload lettre de motivation
         if ($request->hasFile('cover_letter_path')) {
-            $data['cover_letter_path'] = $request->file('cover_letter_path')->store('cover_letters', 'public');
+            $path = $request->file('cover_letter_path')->store('cover_letters', 'public');
+            $data['cover_letter_path'] = Storage::url($path);
         }
+
 
         $application = Application::create($data);
 
