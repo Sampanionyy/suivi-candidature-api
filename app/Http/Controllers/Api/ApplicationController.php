@@ -110,7 +110,33 @@ class ApplicationController extends Controller
             ], 403);
         }
 
-        $application->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('cv_path')) {
+            if ($application->cv_path) {
+                $oldPath = str_replace('/storage/', '', $application->cv_path);
+                Storage::disk('public')->delete($oldPath);
+            }
+            
+            $path = $request->file('cv_path')->store('cvs', 'public');
+            $data['cv_path'] = Storage::url($path);
+        } else {
+            unset($data['cv_path']);
+        }
+
+        if ($request->hasFile('cover_letter_path')) {
+            if ($application->cover_letter_path) {
+                $oldPath = str_replace('/storage/', '', $application->cover_letter_path);
+                Storage::disk('public')->delete($oldPath);
+            }
+            
+            $path = $request->file('cover_letter_path')->store('cover_letters', 'public');
+            $data['cover_letter_path'] = Storage::url($path);
+        } else {
+            unset($data['cover_letter_path']);
+        }
+
+        $application->update($data);
 
         return response()->json([
             'success' => true,
