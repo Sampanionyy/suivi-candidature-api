@@ -41,10 +41,9 @@ RUN composer require laravel-lang/lang --no-interaction || true
 # Publication de la config CORS (optionnel)
 RUN php artisan config:publish cors --no-interaction || true
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# Permissions correctes pour Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Génération de la clé d'application Laravel
 RUN php artisan key:generate --no-interaction --force || true
@@ -52,6 +51,9 @@ RUN php artisan key:generate --no-interaction --force || true
 # Clear des caches
 RUN php artisan config:clear || true
 RUN php artisan cache:clear || true
+
+# Exécuter les migrations automatiquement
+RUN php artisan migrate --force || true
 
 # Exposer le port dynamique pour Railway
 EXPOSE ${PORT}
