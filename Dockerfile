@@ -41,9 +41,21 @@ RUN composer require laravel-lang/lang --no-interaction || true
 # Publication de la config CORS (optionnel)
 RUN php artisan config:publish cors --no-interaction || true
 
+# CORRECTION : Créer les répertoires nécessaires et définir les permissions
+RUN mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/bootstrap/cache
+
 # Permissions correctes pour Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Créer le fichier de log avec les bonnes permissions
+RUN touch /var/www/html/storage/logs/laravel.log \
+    && chown www-data:www-data /var/www/html/storage/logs/laravel.log \
+    && chmod 664 /var/www/html/storage/logs/laravel.log
 
 # Génération de la clé d'application Laravel
 RUN php artisan key:generate --no-interaction --force || true

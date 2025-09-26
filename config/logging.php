@@ -60,9 +60,8 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => env('LOG_CHANNEL', 'single') === 'stderr' ? 'php://stderr' : storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'replace_placeholders' => true,
         ],
 
         'interview-reminders' => [
