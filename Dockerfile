@@ -67,8 +67,6 @@ RUN php artisan cache:clear || true
 # Exécuter les migrations automatiquement
 RUN php artisan migrate --force || true
 
-RUN php artisan session:table --force || true
-
 # Exposer le port dynamique pour Railway
 EXPOSE ${PORT}
 
