@@ -19,6 +19,9 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
     && sed -ri -e "s/80/${PORT}/g" /etc/apache2/ports.conf \
     && sed -ri -e "s/:80/:${PORT}/g" /etc/apache2/sites-available/000-default.conf
 
+# Forcer ServerName pour supprimer le warning Apache
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 # Copier Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
