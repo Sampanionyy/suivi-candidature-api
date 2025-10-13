@@ -17,6 +17,10 @@ class DatabaseSeeder extends Seeder
         
         $this->call([
             ApplicationSeeder::class,
+            JobContractTypeSeeder::class,
+            WorkModeSeeder::class,
+            SkillCategorySeeder::class,
+            SkillSeeder::class
         ]);
     }
 }
