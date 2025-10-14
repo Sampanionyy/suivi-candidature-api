@@ -1,9 +1,5 @@
 FROM php:8.2-apache
 
-# Variables d'environnement Railway
-ARG PORT
-ENV PORT=${PORT:-8080}
-
 # Installation des dépendances système
 RUN apt-get update && apt-get install -y \
     zip unzip git curl libzip-dev libonig-dev libxml2-dev \
@@ -14,12 +10,10 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite
 
 # Configuration du DocumentRoot pour Laravel
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf \
-    && sed -ri -e "s/80/${PORT}/g" /etc/apache2/ports.conf \
-    && sed -ri -e "s/:80/:${PORT}/g" /etc/apache2/sites-available/000-default.conf
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 
-# Forcer ServerName pour supprimer le warning Apache
+# Forcer ServerName
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Copier Composer
@@ -29,46 +23,17 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-# Nettoyage des caches Composer précédents
-RUN rm -rf vendor composer.lock
-
 # Installer les dépendances Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Installer Laravel Lang si nécessaire
-RUN composer require laravel-lang/lang --no-interaction || true
+# Créer les répertoires nécessaires
+RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} \
+             storage/app/public/profile_photos bootstrap/cache
 
-# Publication de la config CORS (optionnel)
-RUN php artisan config:publish cors --no-interaction || true
+# Permissions
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-# CORRECTION : Créer les répertoires nécessaires et définir les permissions
-RUN mkdir -p /var/www/html/storage/logs \
-    && mkdir -p /var/www/html/storage/framework/cache \
-    && mkdir -p /var/www/html/storage/framework/sessions \
-    && mkdir -p /var/www/html/storage/framework/views \
-    && mkdir -p /var/www/html/bootstrap/cache
+EXPOSE 80
 
-# Permissions correctes pour Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Créer le fichier de log avec les bonnes permissions
-RUN touch /var/www/html/storage/logs/laravel.log \
-    && chown www-data:www-data /var/www/html/storage/logs/laravel.log \
-    && chmod 664 /var/www/html/storage/logs/laravel.log
-
-# Génération de la clé d'application Laravel
-RUN php artisan key:generate --no-interaction --force || true
-
-# Clear des caches
-RUN php artisan config:clear || true
-RUN php artisan cache:clear || true
-
-# Exécuter les migrations automatiquement
-RUN php artisan migrate --force || true
-
-# Exposer le port dynamique pour Railway
-EXPOSE ${PORT}
-
-# Commande de démarrage Apache en foreground
 CMD ["apache2-foreground"]
