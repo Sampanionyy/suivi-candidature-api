@@ -13,7 +13,11 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         try {
-            $profile = $request->user()->profile;
+            $profile = $request->user()
+                ->profile()
+                ->with(['skills', 'jobContractTypes', 'workModes'])
+                ->first();
+            dd($profile);
 
             return response()->json([
                 'success' => true,
