@@ -18,6 +18,7 @@ class ProfileController extends Controller
                 ->with(['skills', 'jobContractTypes', 'workModes'])
                 ->first();
 
+
             return response()->json([
                 'success' => true,
                 'message' => 'Profil récupéré avec succès',
@@ -36,7 +37,11 @@ class ProfileController extends Controller
     public function update(UpdateProfileRequest $request)
     {
         try {
-            $profile = $request->user()->profile ?? new Profile(['user_id' => $request->user()->id]);
+            $user = $request->user();
+
+            $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
+
+            $this->updatePreferences($profile, $request);
 
             $profile->fill($request->validated());
             $profile->save();
@@ -44,17 +49,33 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Profil mis à jour avec succès',
-                'data'    => $profile
+                'data'    => $profile->load(['skills', 'jobContractTypes', 'workModes']),
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du profil',
-                'error'   => $e->getMessage()
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
+
+    private function updatePreferences(Profile $profile, UpdateProfileRequest $request)
+    {
+        if ($request->has('skills')) {
+            $profile->skills()->sync($request->skills ?? []);
+        }
+
+        if ($request->has('job_contract_types')) {
+            $profile->jobContractTypes()->sync($request->job_contract_types ?? []);
+        }
+
+        if ($request->has('work_modes')) {
+            $profile->workModes()->sync($request->work_modes ?? []);
+        }
+    }
+
 
     public function updatePhoto(Request $request)
     {
