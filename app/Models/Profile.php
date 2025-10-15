@@ -30,16 +30,16 @@ class Profile extends Model
 
     public function skills()
     {
-        return $this->belongsToMany(Skill::class, 'profile_skill');
+        return $this->belongsToMany(Skill::class, 'profile_skills');
     }
 
     public function jobContractTypes()
     {
-        return $this->belongsToMany(JobContractType::class, 'job_contract_type_profile');
+        return $this->belongsToMany(JobContractType::class, 'job_contract_type_profiles');
     }
 
     public function workModes()
     {
-        return $this->belongsToMany(WorkMode::class, 'work_mode_profile');
+        return $this->belongsToMany(WorkMode::class, 'work_mode_profiles');
     }
 }

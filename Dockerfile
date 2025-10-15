@@ -65,10 +65,9 @@ RUN php artisan config:clear || true
 RUN php artisan cache:clear || true
 
 # Exécuter les migrations automatiquement
-RUN php artisan migrate --force || true
+# RUN php artisan migrate --force || true
 
-# Exposer le port dynamique pour Railway
-EXPOSE ${PORT}
+EXPOSE 8080
 
 # Commande de démarrage Apache en foreground
 CMD ["apache2-foreground"]

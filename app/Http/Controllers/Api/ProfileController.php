@@ -17,7 +17,6 @@ class ProfileController extends Controller
                 ->profile()
                 ->with(['skills', 'jobContractTypes', 'workModes'])
                 ->first();
-            dd($profile);
 
             return response()->json([
                 'success' => true,
