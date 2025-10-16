@@ -44,7 +44,6 @@ class User extends Authenticatable
         return $this->hasMany(Document::class);
     }
 
-
     // Méthodes pour les statistiques
     public function getApplicationsStatsAttribute(): array
     {

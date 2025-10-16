@@ -30,10 +30,26 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} \
              storage/app/public/profile_photos bootstrap/cache
 
-# Permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Permissions correctes pour Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 80
+# Créer le fichier de log avec les bonnes permissions
+RUN touch /var/www/html/storage/logs/laravel.log \
+    && chown www-data:www-data /var/www/html/storage/logs/laravel.log \
+    && chmod 664 /var/www/html/storage/logs/laravel.log
 
+# Génération de la clé d'application Laravel
+RUN php artisan key:generate --no-interaction --force || true
+
+# Clear des caches
+RUN php artisan config:clear || true
+RUN php artisan cache:clear || true
+
+# Exécuter les migrations automatiquement
+# RUN php artisan migrate --force || true
+
+EXPOSE 8080
+
+# Commande de démarrage Apache en foreground
 CMD ["apache2-foreground"]
