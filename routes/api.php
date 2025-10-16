@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\SkillCategoryController;
 use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\WorkModeController;
 use App\Http\Controllers\Api\JobContractTypeController;
+use App\Http\Controllers\Api\OfferController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -48,4 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/skills', SkillController::class);
     Route::apiResource('/job-contract-types', JobContractTypeController::class);
     Route::apiResource('/work-modes', WorkModeController::class);
+
+    Route::apiResource('/offers', OfferController::class);
 });
