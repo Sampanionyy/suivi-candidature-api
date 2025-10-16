@@ -39,4 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/documents', [DocumentController::class, 'index']);
     Route::post('/documents', [DocumentController::class, 'store']);
     Route::delete('/documents/{id}', [DocumentController::class, 'destroy']);
+
+    Route::apiResource('/skill-categories', SkillCategoryController::class);
+    Route::apiResource('/skills', SkillController::class);
 });
