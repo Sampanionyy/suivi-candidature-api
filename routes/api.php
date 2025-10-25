@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\OfferController;
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
