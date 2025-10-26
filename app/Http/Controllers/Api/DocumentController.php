@@ -59,27 +59,27 @@ class DocumentController extends Controller
         }
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        try {
-            $document = $request->user()->documents()->findOrFail($id);
+        $document = Document::findOrFail($id);
 
-            // Supprime le fichier physique
-            Storage::disk('public')->delete(str_replace('/storage/', '', $document->file_url));
-            $document->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Document supprimé avec succès',
-                'data'    => null
-            ], 200);
-
-        } catch (\Exception $e) {
+        if ($document->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la suppression du document',
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => 'Unauthorized'
+            ], 403);
         }
+
+        if ($document->file_url) {
+            Storage::disk('public')->delete($document->file_url);
+        }
+
+        $document->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document deleted successfully',
+        ]);
     }
+
 }
