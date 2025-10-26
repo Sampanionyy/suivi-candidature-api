@@ -18,7 +18,7 @@ class StoreOfferRequest extends FormRequest
             'company' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'url' => 'nullable|url|max:255',
-            'contract_type_id' => 'required|exists:job_contract_types,id',
+            'job_contract_type_id' => 'required|exists:job_contract_types,id',
             'work_mode_id' => 'required|exists:work_modes,id',
             'description' => 'nullable|string',
         ];

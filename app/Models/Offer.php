@@ -24,14 +24,13 @@ class Offer extends Model
         'is_active' => 'boolean',
     ];
 
-    // Relations
     public function contractType()
     {
-        return $this->belongsTo(JobContractType::class, 'contract_type_id');
+        return $this->belongsTo(\App\Models\JobContractType::class, 'job_contract_type_id');
     }
 
     public function workMode()
     {
-        return $this->belongsTo(WorkMode::class, 'work_mode_id');
+        return $this->belongsTo(\App\Models\WorkMode::class, 'work_mode_id');
     }
 }
