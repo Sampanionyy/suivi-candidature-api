@@ -11,11 +11,15 @@ use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\WorkModeController;
 use App\Http\Controllers\Api\JobContractTypeController;
 use App\Http\Controllers\Api\OfferController;
+use App\Http\Controllers\HealthController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 });
+
+Route::get('/health', [HealthController::class, 'check']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     
