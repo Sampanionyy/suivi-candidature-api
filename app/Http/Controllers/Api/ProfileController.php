@@ -81,15 +81,30 @@ class ProfileController extends Controller
     {
         try {
             $request->validate([
-                'photo' => 'required|image|max:2048',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $profile = $request->user()->profile ?? new Profile(['user_id' => $request->user()->id]);
 
             if ($request->hasFile('photo')) {
+                // Supprimer l'ancienne photo si elle existe
+                if ($profile->photo_url) {
+                    // Extraire juste le nom du fichier
+                    $oldFileName = basename($profile->photo_url);
+                    $oldPath = 'profile_photos/' . $oldFileName;
+                    
+                    // Supprimer du disque profile_photos
+                    if (\Illuminate\Support\Facades\Storage::disk('profile_photos')->exists($oldFileName)) {
+                        \Illuminate\Support\Facades\Storage::disk('profile_photos')->delete($oldFileName);
+                    }
+                }
+
+                // Stocker la nouvelle photo
                 $file = $request->file('photo');
-                $path = $file->store('profile_photos', 'public');
-                $profile->photo_url = \Illuminate\Support\Facades\Storage::url($path);
+                $fileName = $file->store('/', 'profile_photos');
+                
+                // Construire l'URL complète accessible via Nginx
+                $profile->photo_url = '/storage/profile_photos/' . basename($fileName);
             }
 
             $profile->save();
@@ -97,10 +112,24 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Photo de profil mise à jour avec succès',
-                'data'    => $profile
+                'data'    => [
+                    'id' => $profile->id,
+                    'photo_url' => $profile->photo_url,
+                    'updated_at' => $profile->updated_at,
+                ]
             ], 200);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors'  => $e->errors()
+            ], 422);
+            
         } catch (\Exception $e) {
+            \Log::error('Upload error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour de la photo de profil',

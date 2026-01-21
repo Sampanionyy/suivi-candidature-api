@@ -58,6 +58,12 @@ return [
             'report' => false,
         ],
 
+        'profile_photos' => [
+            'driver' => 'local',
+            'root' => '/shared-storage/profile_photos',
+            'url' => env('APP_URL').'/storage/profile_photos',
+            'visibility' => 'public',
+        ]
     ],
 
     /*
