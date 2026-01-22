@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class Application extends Model
 {
@@ -21,12 +21,18 @@ class Application extends Model
         'interview_date',
         'notes',
         'cv_path',
-        'cover_letter_path'
+        'cover_letter_path',
+        'last_follow_up_date',
+        'follow_up_count',
+        'needs_follow_up',
     ];
 
     protected $casts = [
         'applied_date' => 'date',
-        'interview_date' => 'datetime'
+        'interview_date' => 'datetime',
+        'last_follow_up_date' => 'date',
+        'follow_up_count' => 'integer',
+        'needs_follow_up' => 'boolean',
     ];
 
     public const STATUSES = [
@@ -83,7 +89,13 @@ class Application extends Model
         ]);
     }
 
-    // Méthode pour les rappels d'entretien
+    public function scopeNeedingFollowUp($query)
+    {
+        return $query->where('needs_follow_up', true)
+                     ->whereIn('status', ['applied', 'interview']);
+    }
+
+    // Méthodes métier
     public function needsInterviewReminder(): bool
     {
         if (!$this->interview_date) {
@@ -94,5 +106,42 @@ class Application extends Model
         
         // Envoyer rappel 3 jours avant
         return $daysDiff === -3;
+    }
+
+    public function needsFollowUp(): bool
+    {
+        if (!in_array($this->status, ['applied', 'interview'])) {
+            return false;
+        }
+
+        if ($this->follow_up_count >= 3) {
+            return false;
+        }
+
+        $lastContactDate = $this->last_follow_up_date ?? $this->applied_date;
+        
+        if (!$lastContactDate) {
+            return false;
+        }
+
+        $daysSinceLastContact = abs(now()->diffInDays($lastContactDate));
+
+        return $daysSinceLastContact >= 3;
+    }
+
+    public function daysSinceLastContact(): int
+    {
+        $lastContactDate = $this->last_follow_up_date ?? $this->applied_date;
+        
+        return $lastContactDate ? abs(now()->diffInDays($lastContactDate)) : 0;
+    }
+
+    public function markFollowUpSent(): void
+    {
+        $this->update([
+            'last_follow_up_date' => now(),
+            'follow_up_count' => $this->follow_up_count + 1,
+            'needs_follow_up' => false,
+        ]);
     }
 }

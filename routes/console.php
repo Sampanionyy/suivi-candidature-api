@@ -14,3 +14,13 @@ Schedule::command('interviews:send-reminders')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/interview-reminders.log'))
     ->description('Rappels d\'entretien (TEST)');
+
+Schedule::command('applications:check-followups')
+    ->dailyAt('12:10')
+    ->timezone('Europe/Paris') 
+    ->onSuccess(function () {
+        info('✅ Vérification des relances effectuée avec succès');
+    })
+    ->onFailure(function () {
+        error('❌ Erreur lors de la vérification des relances');
+    });
