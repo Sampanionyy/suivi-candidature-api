@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -76,7 +77,6 @@ class ProfileController extends Controller
         }
     }
 
-
     public function updatePhoto(Request $request)
     {
         try {
@@ -85,26 +85,25 @@ class ProfileController extends Controller
             ]);
 
             $profile = $request->user()->profile ?? new Profile(['user_id' => $request->user()->id]);
-
+            
             if ($request->hasFile('photo')) {
                 // Supprimer l'ancienne photo si elle existe
                 if ($profile->photo_url) {
-                    // Extraire juste le nom du fichier
-                    $oldFileName = basename($profile->photo_url);
-                    $oldPath = 'profile_photos/' . $oldFileName;
+                    // Extraire le chemin relatif (ex: 'profile_photos/xxx.jpg')
+                    $oldPath = str_replace('/storage/', '', $profile->photo_url);
                     
-                    // Supprimer du disque profile_photos
-                    if (\Illuminate\Support\Facades\Storage::disk('profile_photos')->exists($oldFileName)) {
-                        \Illuminate\Support\Facades\Storage::disk('profile_photos')->delete($oldFileName);
+                    // Supprimer du même disque 'public'
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
                     }
                 }
 
                 // Stocker la nouvelle photo
                 $file = $request->file('photo');
-                $fileName = $file->store('/', 'profile_photos');
+                $fileName = $file->store('profile_photos', 'public');
                 
-                // Construire l'URL complète accessible via Nginx
-                $profile->photo_url = '/storage/profile_photos/' . basename($fileName);
+                // Construire l'URL complète
+                $profile->photo_url = Storage::url($fileName);
             }
 
             $profile->save();
@@ -127,8 +126,7 @@ class ProfileController extends Controller
             ], 422);
             
         } catch (\Exception $e) {
-            \Log::error('Upload error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Upload error: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
