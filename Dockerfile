@@ -1,9 +1,12 @@
 FROM php:8.2-apache
 
-# Installation des dépendances système
+# Installation des dépendances système (ajout de libpng-dev pour Redis)
 RUN apt-get update && apt-get install -y \
     zip unzip git curl libzip-dev libonig-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql zip \
+    cron \
+    && docker-php-ext-install pdo pdo_mysql zip bcmath \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Activation du module rewrite d'Apache
@@ -27,7 +30,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-# Installer les dépendances Composer
+# Installer les dépendances Composer (sans dev en production)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Créer les répertoires nécessaires
