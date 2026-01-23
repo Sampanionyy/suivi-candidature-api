@@ -44,6 +44,7 @@ class ApplicationController extends Controller
 
         return response()->json([
             'success' => true,
+            'count' => $applications->count(),
             'data' => ApplicationResource::collection($applications)
         ]);
     }
